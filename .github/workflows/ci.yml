@@ -21,11 +21,11 @@ jobs:
       - name: Install Dependencies
         run: pip install -r requirements.txt
 
-      - name: Run Tests
+      - name: Run Unit Tests
         run: pytest
 
 
-  docker-build-and-push:
+  docker-build-push-artifact:
     needs: test
     runs-on: ubuntu-latest
 
@@ -33,18 +33,28 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+
+      # Login to Docker Hub securely
       - name: Login to Docker Hub
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
+
+      # Build Docker image
       - name: Build Docker Image
         run: docker build -t ${{ secrets.DOCKER_USERNAME }}/calculator-app:latest .
 
+
+      # Push Docker image
       - name: Push Docker Image
         run: docker push ${{ secrets.DOCKER_USERNAME }}/calculator-app:latest
 
+
+      # Create ZIP artifact
       - name: Create Build Artifact
         run: zip -r build-package.zip .
 
+
+      # Upload artifact to GitHub Actions storage
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
